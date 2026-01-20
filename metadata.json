@@ -1,0 +1,8 @@
+{
+  "name": "归处 (HomeBase AI)",
+  "description": "An AI-powered smart object finder that helps you record and locate household items using photos and voice descriptions.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
