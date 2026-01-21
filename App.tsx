@@ -121,6 +121,13 @@ const App: React.FC = () => {
   };
 
   const navigate = (view: ViewState, params?: Partial<AppState>) => {
+    // 匿名用户进入记录页面前检查限制
+    if (view === 'record' && authService.isAnonymousUser(user) && state.items.length >= UPGRADE_PROMPT_THRESHOLD) {
+      // 已达限制，显示注册引导，阻止进入
+      setShowUpgradePrompt(true);
+      return;
+    }
+
     setState(prev => ({
       ...prev,
       isFromSearch: false,
@@ -133,6 +140,15 @@ const App: React.FC = () => {
    * 添加物品
    */
   const addItem = async (item: Item) => {
+    // 检查匿名用户是否已达到存储限制
+    if (authService.isAnonymousUser(user) && state.items.length >= UPGRADE_PROMPT_THRESHOLD) {
+      // 显示注册引导，阻止添加
+      setShowUpgradePrompt(true);
+      // 返回首页
+      setState(prev => ({ ...prev, view: 'home' }));
+      return;
+    }
+
     try {
       let imageUrl = item.imageUrl;
       if (imageUrl.startsWith('data:image')) {
@@ -154,12 +170,11 @@ const App: React.FC = () => {
         view: 'home'
       }));
 
-      // 检查是否需要显示注册引导
+      // 第 5 个物品保存成功后弹出注册引导提示
       if (
         authService.isAnonymousUser(user) &&
         newItems.length >= UPGRADE_PROMPT_THRESHOLD
       ) {
-        // 延迟显示，让用户先看到保存成功
         setTimeout(() => {
           setShowUpgradePrompt(true);
         }, 500);
@@ -219,7 +234,13 @@ const App: React.FC = () => {
 
     // 显示登录页面（用户主动点击登录）
     if (showAuthView) {
-      return <AuthView onAuthSuccess={handleAuthSuccess} onBack={() => setShowAuthView(false)} />;
+      return (
+        <AuthView
+          onAuthSuccess={handleAuthSuccess}
+          onBack={() => setShowAuthView(false)}
+          isAnonymous={authService.isAnonymousUser(user)}
+        />
+      );
     }
 
     // 显示加载状态

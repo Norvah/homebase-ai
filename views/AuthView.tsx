@@ -1,15 +1,16 @@
 
 import React, { useState } from 'react';
-import { signIn, signUp } from '../services/auth';
+import { signIn, signUp, linkEmailPassword } from '../services/auth';
 
 interface AuthViewProps {
     onAuthSuccess: () => void;
-    onBack?: () => void; // 返回首页回调
+    onBack?: () => void;
+    isAnonymous?: boolean; // 是否为匿名用户
 }
 
 type AuthMode = 'login' | 'register';
 
-const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack }) => {
+const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous }) => {
     const [mode, setMode] = useState<AuthMode>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -61,11 +62,18 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack }) => {
 
         try {
             if (mode === 'register') {
-                await signUp(email, password);
-                setSuccess('注册成功！请查收验证邮件后登录');
-                setMode('login');
-                setPassword('');
-                setConfirmPassword('');
+                if (isAnonymous) {
+                    // 匿名用户升级账号，保留现有数据
+                    await linkEmailPassword(email, password);
+                    onAuthSuccess();
+                } else {
+                    // 新用户注册
+                    await signUp(email, password);
+                    setSuccess('注册成功！请查收验证邮件后登录');
+                    setMode('login');
+                    setPassword('');
+                    setConfirmPassword('');
+                }
             } else {
                 await signIn(email, password);
                 onAuthSuccess();
