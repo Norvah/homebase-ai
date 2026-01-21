@@ -5,9 +5,11 @@ import { ViewState, AppState } from '../types';
 interface HomeViewProps {
   navigate: (view: ViewState, params?: Partial<AppState>) => void;
   itemCount: number;
+  onSignOut?: () => void;
+  onShowAuth?: () => void;
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount }) => {
+const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount, onSignOut, onShowAuth }) => {
   return (
     <div className="relative flex flex-col h-full px-6 pt-16 pb-12">
       <header className="mb-10 flex justify-between items-start">
@@ -15,14 +17,30 @@ const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount }) => {
           <h1 className="text-3xl font-bold tracking-tight text-white">归处</h1>
           <p className="text-white/50 text-sm mt-1">记录生活的每一个角落</p>
         </div>
-        <button className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 active:scale-95 transition-transform">
-          <span className="material-symbols-outlined text-xl text-white">settings</span>
-        </button>
+        {/* 匿名用户显示登录按钮，正式用户显示登出按钮 */}
+        {onShowAuth ? (
+          <button
+            onClick={onShowAuth}
+            className="h-9 px-4 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center gap-1.5 border border-primary/30 active:scale-95 transition-transform"
+            title="登录/注册"
+          >
+            <span className="material-symbols-outlined text-lg text-primary">login</span>
+            <span className="text-primary text-xs font-bold">登录</span>
+          </button>
+        ) : onSignOut ? (
+          <button
+            onClick={onSignOut}
+            className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 active:scale-95 transition-transform"
+            title="退出登录"
+          >
+            <span className="material-symbols-outlined text-xl text-white">logout</span>
+          </button>
+        ) : null}
       </header>
 
       <div className="flex-1 flex flex-col gap-6">
         {/* Record Card */}
-        <div 
+        <div
           onClick={() => navigate('record')}
           className="flex-1 bg-primary rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer shadow-2xl group"
         >
@@ -43,7 +61,7 @@ const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount }) => {
         </div>
 
         {/* Find Card */}
-        <div 
+        <div
           onClick={() => navigate('search')}
           className="flex-1 bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer shadow-2xl group"
         >
@@ -58,7 +76,7 @@ const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount }) => {
       </div>
 
       <footer className="mt-10">
-        <button 
+        <button
           onClick={() => navigate('list')}
           className="w-full bg-[#1c1c1e] border border-white/5 py-5 px-6 rounded-3xl flex items-center justify-between active:scale-[0.99] transition-transform hover:bg-white/5"
         >

@@ -52,8 +52,16 @@ export const fetchItems = async (): Promise<Item[]> => {
 /**
  * 创建新物品
  * @param item 物品信息（不包含 id，由数据库自动生成）
+ * 自动关联当前登录用户
  */
 export const createItem = async (item: Omit<Item, 'id'>): Promise<Item> => {
+    // 获取当前用户 ID
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error('用户未登录');
+    }
+
     const { data, error } = await supabase
         .from(TABLE_NAME)
         .insert({
@@ -61,6 +69,7 @@ export const createItem = async (item: Omit<Item, 'id'>): Promise<Item> => {
             location: item.location,
             image_url: item.imageUrl,
             is_removed: item.isRemoved || false,
+            user_id: user.id,
         })
         .select()
         .single();
