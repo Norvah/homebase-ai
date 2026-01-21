@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Item } from '../types';
 import { smartUpdateField } from '../services/ai';
+import { useI18n } from '../i18n';
 
 interface DetailViewProps {
   item: Item;
@@ -11,6 +12,7 @@ interface DetailViewProps {
 }
 
 const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromSearch }) => {
+  const { locale, t } = useI18n();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(item.name);
   const [editedLocation, setEditedLocation] = useState(item.location);
@@ -33,7 +35,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'zh-CN';
+      recognition.lang = locale === 'zh' ? 'zh-CN' : 'en-US';
 
       recognition.onresult = (event: any) => {
         let currentTranscript = '';
@@ -45,7 +47,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
 
       recognitionRef.current = recognition;
     }
-  }, []);
+  }, [locale]);
 
   // 相机流管理
   useEffect(() => {
@@ -164,11 +166,11 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
           <div className="w-full bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-white/10 shadow-2xl mb-10">
             <div className="flex items-center gap-3 mb-5">
               <span className="material-symbols-outlined text-primary-indigo text-xl">location_on</span>
-              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">AI 识别位置</span>
+              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{t('record.aiExtract')}</span>
             </div>
             <p className="text-white text-3xl font-bold leading-tight">{item.location}</p>
           </div>
-          <button onClick={onBack} className="w-full bg-primary-indigo h-14 rounded-[2.5rem] text-white font-bold text-xl shadow-[0_15px_45px_rgba(50,17,212,0.5)] active:scale-95 transition-all">知道了</button>
+          <button onClick={onBack} className="w-full bg-primary-indigo h-14 rounded-[2.5rem] text-white font-bold text-xl shadow-[0_15px_45px_rgba(50,17,212,0.5)] active:scale-95 transition-all">{t('common.confirm')}</button>
         </div>
       </div>
     );
@@ -187,9 +189,9 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
         </button>
 
         {isEditing ? (
-          <h2 className="text-white font-bold tracking-tight">语音编辑物品</h2>
+          <h2 className="text-white font-bold tracking-tight">{t('detail.voiceEdit')}</h2>
         ) : (
-          <h2 className="text-white font-bold tracking-tight">物品详情</h2>
+          <h2 className="text-white font-bold tracking-tight">{t('detail.title')}</h2>
         )}
 
         {isEditing ? (
@@ -200,7 +202,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white shadow-lg active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">edit</span>
-            <span className="text-xs font-bold tracking-wider">编辑</span>
+            <span className="text-xs font-bold tracking-wider">{t('common.edit')}</span>
           </button>
         )}
       </header>
@@ -222,7 +224,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
               className="bg-black/60 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2 text-white text-[10px] font-bold active:scale-95 transition-transform disabled:opacity-30"
             >
               <span className="material-symbols-outlined text-sm">photo_camera</span>
-              更新照片
+              {t('record.retake')}
             </button>
           </div>
         )}
@@ -231,7 +233,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
           <div className="absolute bottom-4 left-6 flex items-center gap-2">
             <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md text-primary px-3 py-1 rounded-full border border-primary/30">
               <span className="material-symbols-outlined text-[14px] font-bold">verified</span>
-              <span className="text-[9px] font-bold uppercase tracking-widest">已由 AI 识别</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest">{t('detail.aiRecognized')}</span>
             </div>
           </div>
         )}
@@ -243,7 +245,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
           <label className="flex items-center justify-between text-white/40 text-[10px] font-bold mb-1.5 uppercase tracking-widest">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-base">inventory_2</span>
-              物品名称
+              {t('record.itemLabel')}
             </div>
           </label>
           {isEditing ? (
@@ -271,7 +273,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2 text-primary/60 px-1">
               <span className="material-symbols-outlined text-base">location_on</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider">位置描述</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">{t('record.locationLabel')}</span>
             </div>
           </div>
           <div className={`flex-1 bg-[#342418]/40 border rounded-2xl p-4 shadow-inner flex flex-col relative transition-all duration-300 ${recordingField === 'location' ? 'border-primary' : 'border-white/5'}`}>
@@ -282,7 +284,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
                   value={editedLocation}
                   disabled={isAIProcessing}
                   onChange={(e) => setEditedLocation(e.target.value)}
-                  placeholder="请输入位置描述..."
+                  placeholder={t('list.searchPlaceholder')}
                 />
                 {!recordingField && (
                   <button
@@ -308,7 +310,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
               <div className={`size-9 rounded-xl flex items-center justify-center ${item.isRemoved ? 'bg-red-500/20' : 'bg-primary/10'}`}>
                 <span className={`material-symbols-outlined text-xl ${item.isRemoved ? 'text-red-500' : 'text-primary'}`}>outbox</span>
               </div>
-              <div className="font-bold text-white text-sm">标记已取出</div>
+              <div className="font-bold text-white text-sm">{t('detail.markRemoved')}</div>
             </div>
             <div
               onClick={toggleRemoved}
@@ -328,14 +330,14 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
             onClick={handleSave}
             disabled={isAIProcessing}
             className="w-full bg-primary h-14 rounded-[2.5rem] text-white font-bold shadow-lg active:scale-[0.98] transition-all disabled:opacity-30"
-          >确认并保存</button>
+          >{t('record.confirmSave')}</button>
         ) : (
           <button
             onClick={onBack}
             className="w-full h-14 rounded-[2.5rem] bg-[#342418] border border-white/10 text-white/80 font-bold flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl"
           >
             <span className="material-symbols-outlined text-lg">arrow_back</span>
-            <span>返回列表</span>
+            <span>{t('detail.backToList')}</span>
           </button>
         )}
       </div>
@@ -356,26 +358,26 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
                     <span className="material-symbols-outlined text-white animate-spin text-2xl">sync</span>
                   </div>
                 </div>
-                <h3 className="text-white text-lg font-bold">AI 正在精准更新描述...</h3>
-                <p className="text-white/30 text-[10px] mt-2 tracking-widest font-bold">请勿担心，我们已理解您的意图</p>
+                <h3 className="text-white text-lg font-bold">{t('detail.aiUpdating')}</h3>
+                <p className="text-white/30 text-[10px] mt-2 tracking-widest font-bold">{t('detail.aiUpdatingDesc')}</p>
               </div>
             )}
 
-            <div className="text-primary text-[10px] mb-3 uppercase tracking-[0.25em] font-black animate-pulse">倾听中...</div>
+            <div className="text-primary text-[10px] mb-3 uppercase tracking-[0.25em] font-black animate-pulse">{t('record.listening')}</div>
             <h2 className="text-white text-xl font-bold leading-tight mb-8 min-h-[40px] px-2">
-              {transcript ? `“${transcript}”` : `请描述新的${recordingField === 'name' ? '名称' : '位置'}`}
+              {transcript ? `“${transcript}”` : t('detail.voiceTip', { field: recordingField === 'name' ? t('record.itemLabel') : t('record.locationLabel') })}
             </h2>
             <div className="w-full flex flex-col gap-3">
               <button
                 onClick={stopVoiceEdit}
                 disabled={isAIProcessing}
                 className="w-full bg-primary h-14 rounded-[2.5rem] text-white font-bold active:scale-95 transition-transform disabled:opacity-0"
-              >完成听取</button>
+              >{t('record.complete')}</button>
               <button
                 onClick={cancelVoiceEdit}
                 disabled={isAIProcessing}
                 className="w-full h-14 rounded-[2.5rem] bg-white/5 text-white/80 font-bold active:scale-95 transition-transform disabled:opacity-0"
-              >放弃修改</button>
+              >{t('common.cancel')}</button>
             </div>
           </div>
         </div>
@@ -395,3 +397,4 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onBack, onUpdate, isFromS
 };
 
 export default DetailView;
+

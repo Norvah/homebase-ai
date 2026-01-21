@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { signIn, signUp, linkEmailPassword } from '../services/auth';
+import { useI18n } from '../i18n';
 
 interface AuthViewProps {
     onAuthSuccess: () => void;
@@ -11,6 +12,7 @@ interface AuthViewProps {
 type AuthMode = 'login' | 'register';
 
 const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous }) => {
+    const { t } = useI18n();
     const [mode, setMode] = useState<AuthMode>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -24,27 +26,27 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
         setError(null);
 
         if (!email.trim()) {
-            setError('请输入邮箱');
+            setError(t('auth.enterEmail'));
             return false;
         }
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setError('请输入有效的邮箱地址');
+            setError(t('auth.invalidEmail'));
             return false;
         }
 
         if (!password) {
-            setError('请输入密码');
+            setError(t('auth.enterPassword'));
             return false;
         }
 
         if (password.length < 6) {
-            setError('密码至少需要 6 位');
+            setError(t('auth.passwordMinLength'));
             return false;
         }
 
         if (mode === 'register' && password !== confirmPassword) {
-            setError('两次输入的密码不一致');
+            setError(t('auth.passwordMismatch'));
             return false;
         }
 
@@ -69,7 +71,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                 } else {
                     // 新用户注册
                     await signUp(email, password);
-                    setSuccess('注册成功！请查收验证邮件后登录');
+                    setSuccess(t('auth.registerSuccess'));
                     setMode('login');
                     setPassword('');
                     setConfirmPassword('');
@@ -79,14 +81,14 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                 onAuthSuccess();
             }
         } catch (err: any) {
-            const message = err?.message || '操作失败，请重试';
+            const message = err?.message || t('common.error');
             // 翻译常见错误信息
             if (message.includes('Invalid login credentials')) {
-                setError('邮箱或密码错误');
+                setError(t('auth.invalidCredentials'));
             } else if (message.includes('Email not confirmed')) {
-                setError('请先验证邮箱后再登录');
+                setError(t('auth.emailNotConfirmed'));
             } else if (message.includes('User already registered')) {
-                setError('该邮箱已注册，请直接登录');
+                setError(t('auth.emailExists'));
             } else {
                 setError(message);
             }
@@ -113,21 +115,21 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                     <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/30 shadow-lg shadow-primary/20">
                         <span className="material-symbols-outlined text-4xl text-primary">home</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">归处</h1>
-                    <p className="text-white/40 text-sm mt-2">记录生活的每一个角落</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">{t('app.name')}</h1>
+                    <p className="text-white/40 text-sm mt-2">{t('app.slogan')}</p>
                 </div>
 
                 {/* 表单卡片 */}
                 <div className="w-full max-w-sm bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
                     <h2 className="text-xl font-bold text-white mb-6 text-center">
-                        {mode === 'login' ? '欢迎回来' : '创建账号'}
+                        {mode === 'login' ? t('auth.welcome') : t('auth.createAccount')}
                     </h2>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* 邮箱输入 */}
                         <div>
                             <label className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2 block">
-                                邮箱
+                                {t('auth.email')}
                             </label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-xl">mail</span>
@@ -145,7 +147,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                         {/* 密码输入 */}
                         <div>
                             <label className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2 block">
-                                密码
+                                {t('auth.password')}
                             </label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-xl">lock</span>
@@ -164,7 +166,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                         {mode === 'register' && (
                             <div>
                                 <label className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2 block">
-                                    确认密码
+                                    {t('auth.confirmPassword')}
                                 </label>
                                 <div className="relative">
                                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-xl">lock</span>
@@ -205,14 +207,14 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                             {isLoading ? (
                                 <>
                                     <span className="material-symbols-outlined text-xl animate-spin">sync</span>
-                                    <span>处理中...</span>
+                                    <span>{t('auth.processing')}</span>
                                 </>
                             ) : (
                                 <>
                                     <span className="material-symbols-outlined text-xl">
                                         {mode === 'login' ? 'login' : 'person_add'}
                                     </span>
-                                    <span>{mode === 'login' ? '登录' : '注册'}</span>
+                                    <span>{mode === 'login' ? t('auth.login') : t('auth.register')}</span>
                                 </>
                             )}
                         </button>
@@ -225,7 +227,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                             disabled={isLoading}
                             className="text-white/40 text-sm hover:text-white transition-colors disabled:opacity-50"
                         >
-                            {mode === 'login' ? '没有账号？立即注册' : '已有账号？立即登录'}
+                            {mode === 'login' ? t('auth.noAccount') : t('auth.hasAccount')}
                         </button>
                     </div>
                 </div>
@@ -240,7 +242,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                         className="text-white/30 text-sm hover:text-white/50 transition-colors disabled:opacity-50 flex items-center gap-1 py-2 px-4"
                     >
                         <span className="material-symbols-outlined text-base">arrow_back</span>
-                        <span>稍后再说</span>
+                        <span>{t('auth.laterText')}</span>
                     </button>
                 </div>
             )}
@@ -258,9 +260,12 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                                 <span className="material-symbols-outlined text-2xl text-primary">card_giftcard</span>
                             </div>
                         </div>
-                        <h3 className="text-lg font-bold text-white text-center mb-2">现在注册有福利！</h3>
+                        <h3 className="text-lg font-bold text-white text-center mb-2">{t('upgrade.benefit')}</h3>
                         <p className="text-white/50 text-sm text-center mb-6 leading-relaxed">
-                            立即注册可获得 <span className="text-primary font-bold">无限物品存储</span> + <span className="text-primary font-bold">云端同步</span>，换设备也不丢失数据
+                            {t('upgrade.benefitDesc', {
+                                unlimited: t('upgrade.unlimited'),
+                                sync: t('upgrade.sync')
+                            })}
                         </p>
                         <div className="flex gap-3">
                             <button
@@ -270,7 +275,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                                 }}
                                 className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-white/50 text-sm font-medium active:scale-95 transition-all"
                             >
-                                先不了
+                                {t('upgrade.skip')}
                             </button>
                             <button
                                 onClick={() => {
@@ -279,7 +284,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
                                 }}
                                 className="flex-1 h-11 rounded-xl bg-primary text-white text-sm font-bold active:scale-95 transition-all"
                             >
-                                立即注册
+                                {t('upgrade.now')}
                             </button>
                         </div>
                     </div>
@@ -290,3 +295,4 @@ const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess, onBack, isAnonymous 
 };
 
 export default AuthView;
+

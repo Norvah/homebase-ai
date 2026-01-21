@@ -12,6 +12,7 @@ import UpgradePrompt from './components/UpgradePrompt';
 import * as itemService from './services/itemService';
 import * as authService from './services/auth';
 import type { User } from './services/auth';
+import { useI18n } from './i18n/index';
 
 // 触发注册引导的物品数量阈值
 const UPGRADE_PROMPT_THRESHOLD = 5;
@@ -75,6 +76,8 @@ const App: React.FC = () => {
     return unsubscribe;
   }, []);
 
+  const { t } = useI18n();
+
   // 加载物品数据
   const loadItems = async () => {
     try {
@@ -84,7 +87,7 @@ const App: React.FC = () => {
       setState(prev => ({ ...prev, items, view: 'home' }));
     } catch (err) {
       console.error('加载物品失败:', err);
-      setError('加载数据失败，请检查网络连接');
+      setError(t('record.errorNetwork'));
       setState(prev => ({ ...prev, view: 'home' }));
     } finally {
       setIsLoading(false);

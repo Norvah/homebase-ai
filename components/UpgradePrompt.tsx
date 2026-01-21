@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { linkEmailPassword } from '../services/auth';
+import { useI18n } from '../i18n';
 
 interface UpgradePromptProps {
     onSuccess: () => void;
@@ -13,6 +14,7 @@ interface UpgradePromptProps {
  * 当匿名用户记录到第 5 个物品时显示
  */
 const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, itemCount }) => {
+    const { t } = useI18n();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,27 +25,27 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
         setError(null);
 
         if (!email.trim()) {
-            setError('请输入邮箱');
+            setError(t('auth.enterEmail'));
             return false;
         }
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setError('请输入有效的邮箱地址');
+            setError(t('auth.invalidEmail'));
             return false;
         }
 
         if (!password) {
-            setError('请输入密码');
+            setError(t('auth.enterPassword'));
             return false;
         }
 
         if (password.length < 6) {
-            setError('密码至少需要 6 位');
+            setError(t('auth.passwordMinLength'));
             return false;
         }
 
         if (password !== confirmPassword) {
-            setError('两次输入的密码不一致');
+            setError(t('auth.passwordMismatch'));
             return false;
         }
 
@@ -62,9 +64,9 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
             await linkEmailPassword(email, password);
             onSuccess();
         } catch (err: any) {
-            const message = err?.message || '操作失败，请重试';
+            const message = err?.message || t('common.error');
             if (message.includes('email_exists')) {
-                setError('该邮箱已被使用');
+                setError(t('auth.emailExists'));
             } else {
                 setError(message);
             }
@@ -92,11 +94,10 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
 
                 {/* 标题 */}
                 <h2 className="text-xl font-bold text-white text-center mb-2">
-                    保存你的数据
+                    {t('upgrade.title')}
                 </h2>
                 <p className="text-white/50 text-sm text-center mb-6">
-                    你已经记录了 <span className="text-primary font-bold">{itemCount}</span> 件物品！
-                    注册后数据云端同步，换设备也不丢失
+                    {t('upgrade.desc', { count: itemCount })}
                 </p>
 
                 {/* 表单 */}
@@ -108,7 +109,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="邮箱"
+                                placeholder={t('auth.email')}
                                 disabled={isLoading}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl h-12 pl-11 pr-4 text-white placeholder:text-white/30 focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all disabled:opacity-50 text-sm"
                             />
@@ -122,7 +123,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="设置密码"
+                                placeholder={t('auth.password')}
                                 disabled={isLoading}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl h-12 pl-11 pr-4 text-white placeholder:text-white/30 focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all disabled:opacity-50 text-sm"
                             />
@@ -136,7 +137,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="确认密码"
+                                placeholder={t('auth.confirmPassword')}
                                 disabled={isLoading}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl h-12 pl-11 pr-4 text-white placeholder:text-white/30 focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all disabled:opacity-50 text-sm"
                             />
@@ -160,12 +161,12 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
                         {isLoading ? (
                             <>
                                 <span className="material-symbols-outlined text-lg animate-spin">sync</span>
-                                <span>处理中...</span>
+                                <span>{t('auth.processing')}</span>
                             </>
                         ) : (
                             <>
                                 <span className="material-symbols-outlined text-lg">person_add</span>
-                                <span>立即注册</span>
+                                <span>{t('upgrade.now')}</span>
                             </>
                         )}
                     </button>
@@ -177,7 +178,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onSuccess, onDismiss, ite
                     disabled={isLoading}
                     className="w-full mt-4 py-3 text-white/40 text-sm font-medium hover:text-white/60 transition-colors disabled:opacity-50"
                 >
-                    稍后再说
+                    {t('upgrade.later')}
                 </button>
             </div>
         </div>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Item, ViewState, AppState } from '../types';
 import { findItems } from '../services/ai';
+import { useI18n } from '../i18n';
 
 interface SearchViewProps {
   items: Item[];
@@ -11,6 +12,7 @@ interface SearchViewProps {
 type SearchPhase = 'listening' | 'matching' | 'results' | 'too_many_results' | 'reveal' | 'no_results';
 
 const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
+  const { locale, t } = useI18n();
   const [phase, setPhase] = useState<SearchPhase>('listening');
   const [transcript, setTranscript] = useState('');
   const [results, setResults] = useState<Item[]>([]);
@@ -29,7 +31,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'zh-CN';
+      recognitionRef.current.lang = locale === 'zh' ? 'zh-CN' : 'en-US';
 
       recognitionRef.current.onresult = (event: any) => {
         let currentTranscript = '';
@@ -62,7 +64,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
     return () => {
       if (recognitionRef.current) recognitionRef.current.stop();
     };
-  }, []);
+  }, [locale]);
 
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
@@ -147,7 +149,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
     } catch (err: any) {
       console.error(err);
       const isRateLimit = err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED');
-      setErrorHint(isRateLimit ? "AI 线路忙 (429)，请稍后再试" : "分析服务出现一点状况");
+      setErrorHint(isRateLimit ? t('record.errorRateLimit') : t('record.errorNetwork'));
       setPhase('no_results');
     }
   };
@@ -166,7 +168,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
           <button onClick={() => navigate('home')} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10">
             <span className="material-symbols-outlined text-white text-xl">close</span>
           </button>
-          <span className="text-white/40 text-[10px] font-bold tracking-[0.2em] uppercase">AI 智能寻物</span>
+          <span className="text-white/40 text-[10px] font-bold tracking-[0.2em] uppercase">{t('search.aiSearch')}</span>
           <div className="w-10" />
         </header>
 
@@ -179,9 +181,9 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
           </div>
 
           <h1 className="text-white text-4xl font-bold text-center mb-6 h-20 overflow-hidden leading-tight">
-            {transcript || "找什么？"}
+            {transcript || t('search.placeholder')}
           </h1>
-          <p className="text-white/30 text-sm text-center font-medium">请按住说出物品名称或位置描述</p>
+          <p className="text-white/30 text-sm text-center font-medium">{t('search.tip')}</p>
 
           <div className="mt-20 flex items-center justify-center gap-1.5 h-10">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
@@ -200,7 +202,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             className={`w-full h-16 rounded-[2.5rem] flex items-center justify-center gap-4 text-white font-bold text-lg transition-all ${isRecording ? 'bg-primary-indigo scale-95 shadow-none' : 'bg-primary-indigo shadow-[0_15px_45px_rgba(50,17,212,0.3)] active:scale-[0.98]'}`}
           >
             <span className="material-symbols-outlined text-3xl">{isRecording ? 'mic' : 'mic_none'}</span>
-            <span>{isRecording ? '松开即匹配' : '按住说话'}</span>
+            <span>{isRecording ? t('search.releaseToMatch') : t('search.holdToSpeak')}</span>
           </button>
         </div>
         <style>{`@keyframes voice-wave { 0%, 100% { height: 6px; } 50% { height: 32px; } }`}</style>
@@ -215,7 +217,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
           <button onClick={() => setPhase('listening')} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10">
             <span className="material-symbols-outlined text-white text-xl">close</span>
           </button>
-          <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">AI 智能寻物</span>
+          <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{t('search.aiSearch')}</span>
           <div className="w-10" />
         </header>
 
@@ -228,23 +230,23 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
           </div>
 
           <h2 className="text-white text-2xl font-bold mb-4 tracking-tight leading-snug px-4">
-            找到了很多相关的物品，<br />请问您找的是哪一个？
+            {t('search.tooManyResults')}
           </h2>
 
-          <p className="text-white/40 text-xs font-medium mb-8">您可以尝试缩小范围</p>
+          <p className="text-white/40 text-xs font-medium mb-8">{t('search.refineTip')}</p>
 
           <div className="flex flex-wrap justify-center gap-3 mb-10 max-w-sm">
-            <button onClick={() => handleChipClick('在卧室的')} className="bg-primary-indigo/20 border border-primary-indigo/30 px-5 py-3 rounded-xl flex items-center gap-2 text-white/90 text-sm font-bold active:scale-95 transition-transform">
+            <button onClick={() => handleChipClick(t('search.chipBedroom'))} className="bg-primary-indigo/20 border border-primary-indigo/30 px-5 py-3 rounded-xl flex items-center gap-2 text-white/90 text-sm font-bold active:scale-95 transition-transform">
               <span className="material-symbols-outlined text-primary-indigo text-lg">bedroom_parent</span>
-              <span>在卧室的</span>
+              <span>{t('search.chipBedroom')}</span>
             </button>
-            <button onClick={() => handleChipClick('最近存入的')} className="bg-primary-indigo/20 border border-primary-indigo/30 px-5 py-3 rounded-xl flex items-center gap-2 text-white/90 text-sm font-bold active:scale-95 transition-transform">
+            <button onClick={() => handleChipClick(t('search.chipRecent'))} className="bg-primary-indigo/20 border border-primary-indigo/30 px-5 py-3 rounded-xl flex items-center gap-2 text-white/90 text-sm font-bold active:scale-95 transition-transform">
               <span className="material-symbols-outlined text-primary-indigo text-lg">schedule</span>
-              <span>最近存入的</span>
+              <span>{t('search.chipRecent')}</span>
             </button>
-            <button onClick={() => handleChipClick('文件类的')} className="bg-primary-indigo/20 border border-primary-indigo/30 px-5 py-3 rounded-xl flex items-center gap-2 text-white/90 text-sm font-bold active:scale-95 transition-transform">
+            <button onClick={() => handleChipClick(t('search.chipFiles'))} className="bg-primary-indigo/20 border border-primary-indigo/30 px-5 py-3 rounded-xl flex items-center gap-2 text-white/90 text-sm font-bold active:scale-95 transition-transform">
               <span className="material-symbols-outlined text-primary-indigo text-lg">description</span>
-              <span>文件类的</span>
+              <span>{t('search.chipFiles')}</span>
             </button>
           </div>
 
@@ -253,7 +255,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
               <div key={i} className={`w-1 bg-primary-indigo rounded-full transition-all duration-300 ${isRecording ? 'animate-[voice-wave_0.5s_infinite_ease-in-out]' : 'h-1 opacity-20'}`} style={{ animationDelay: `${i * 0.06}s` }}></div>
             ))}
           </div>
-          <p className="text-white/40 text-xs font-medium italic">“卧室里的蓝色文件夹”</p>
+          <p className="text-white/40 text-xs font-medium italic">“{t('search.example')}”</p>
         </div>
 
         <div className="pb-14 pt-4 shrink-0 flex flex-col items-center">
@@ -266,9 +268,9 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             className={`w-60 h-24 rounded-[3.5rem] flex items-center justify-center gap-4 text-white font-bold transition-all mx-auto ${isRecording ? 'bg-primary-indigo scale-95' : 'bg-primary-indigo shadow-[0_15px_45px_rgba(50,17,212,0.4)] active:scale-[0.98]'}`}
           >
             <span className="material-symbols-outlined text-4xl">{isRecording ? 'mic' : 'mic_none'}</span>
-            <span className="text-xl">按住说话</span>
+            <span className="text-xl">{t('search.holdToSpeak')}</span>
           </button>
-          <p className="text-white/20 text-[9px] text-center mt-6 font-bold tracking-[0.2em] uppercase">AI 正在聆听您的详细描述</p>
+          <p className="text-white/20 text-[9px] text-center mt-6 font-bold tracking-[0.2em] uppercase">{t('search.aiListening')}</p>
         </div>
         <style>{`@keyframes voice-wave { 0%, 100% { height: 4px; } 50% { height: 24px; } }`}</style>
       </div>
@@ -282,13 +284,13 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
           <button onClick={() => setPhase('listening')} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10">
             <span className="material-symbols-outlined text-white">chevron_left</span>
           </button>
-          <h2 className="text-white text-sm font-bold tracking-widest uppercase opacity-60">搜索结果</h2>
+          <h2 className="text-white text-sm font-bold tracking-widest uppercase opacity-60">{t('search.results')}</h2>
           <div className="w-10" />
         </header>
 
         <div className="px-8 mt-4 text-center relative z-10 shrink-0">
           <h3 className="text-white text-2xl font-bold tracking-tight mb-0.5">
-            为您找到了 {results.length} 件相关物品
+            {t('search.foundCount', { count: results.length })}
           </h3>
           <p className="text-white/30 text-[10px] font-bold tracking-[0.2em] italic uppercase">“{transcript}”</p>
         </div>
@@ -357,7 +359,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             className="w-full bg-primary-indigo h-16 rounded-[2rem] flex items-center justify-center gap-4 text-white font-bold text-lg shadow-[0_15px_45px_rgba(50,17,212,0.3)] active:scale-[0.98] transition-all"
           >
             <span className="material-symbols-outlined text-2xl fill">check_circle</span>
-            <span>这就是我要找的</span>
+            <span>{t('search.confirmNeeded')}</span>
           </button>
 
           <button
@@ -365,7 +367,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             className="w-full h-12 rounded-[2rem] flex items-center justify-center gap-3 text-white/40 font-bold text-sm bg-white/5 border border-white/5 active:bg-white/10 transition-colors"
           >
             <span className="material-symbols-outlined text-xl">keyboard_voice</span>
-            <span>描述不对？重新说一下</span>
+            <span>{t('record.wrongDescribe')}</span>
           </button>
         </div>
         <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
@@ -394,7 +396,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
           <div className="w-full bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-white/10 shadow-2xl mb-8">
             <div className="flex items-center gap-3 mb-5">
               <span className="material-symbols-outlined text-primary-indigo text-xl">location_on</span>
-              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">AI 识别位置</span>
+              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{t('record.aiExtract')}</span>
             </div>
             <p className="text-white text-3xl font-bold leading-tight">{item.location}</p>
           </div>
@@ -403,7 +405,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             onClick={() => navigate('home')}
             className="w-full bg-primary-indigo h-16 rounded-[2.5rem] text-white font-bold text-xl shadow-[0_15px_45px_rgba(50,17,212,0.5)] active:scale-95 transition-all"
           >
-            知道了
+            {t('common.confirm')}
           </button>
         </div>
       </div>
@@ -419,7 +421,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             <span className="material-symbols-outlined text-5xl text-white animate-bounce">search</span>
           </div>
         </div>
-        <h2 className="text-white text-2xl font-bold mb-4 tracking-tight">正在深度匹配...</h2>
+        <h2 className="text-white text-2xl font-bold mb-4 tracking-tight">{t('search.matching')}</h2>
         <p className="text-white/40 text-center max-w-xs leading-relaxed italic font-medium">“{transcript}”</p>
       </div>
     );
@@ -438,16 +440,16 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             <span className="material-symbols-outlined text-5xl">search_off</span>
           </div>
           <h2 className="text-white text-3xl font-bold mb-4 tracking-tight">
-            {errorHint ? "遇到了一点阻碍" : "抱歉，没能找到它"}
+            {errorHint ? t('search.errorBlocked') : t('search.noResults')}
           </h2>
           <p className="text-white/40 text-base leading-relaxed max-w-xs font-medium italic">
             {errorHint || `“${transcript}”`}
           </p>
-          {!errorHint && <p className="text-white/20 text-xs mt-4">建议换个说法，比如描述物品颜色或周围环境</p>}
+          {!errorHint && <p className="text-white/20 text-xs mt-4">{t('search.noResultsTip')}</p>}
         </div>
         <div className="pb-16">
           <button onClick={() => setPhase('listening')} className="w-full bg-primary-indigo h-16 rounded-[2.5rem] text-white font-bold active:scale-[0.98] transition-transform">
-            {errorHint ? "重试一次" : "重新描述"}
+            {errorHint ? t('common.retry') : t('search.retryDesc')}
           </button>
         </div>
       </div>
@@ -458,3 +460,4 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
 };
 
 export default SearchView;
+

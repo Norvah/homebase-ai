@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewState, AppState } from '../types';
 import { processRecording } from '../services/ai';
+import { useI18n } from '../i18n';
 
 interface RecordViewProps {
   navigate: (view: ViewState, params?: Partial<AppState>) => void;
@@ -11,6 +12,7 @@ interface RecordViewProps {
 type RecordPhase = 'camera' | 'recording' | 'processing' | 'confirm';
 
 const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
+  const { locale, t } = useI18n();
   const [phase, setPhase] = useState<RecordPhase>('camera');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [transcript, setTranscript] = useState('');
@@ -44,7 +46,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'zh-CN';
+      recognition.lang = locale === 'zh' ? 'zh-CN' : 'en-US';
 
       recognition.onresult = (event: any) => {
         let currentTranscript = '';
@@ -56,7 +58,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
 
       recognitionRef.current = recognition;
     }
-  }, []);
+  }, [locale]);
 
   const takePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -104,7 +106,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
 
     try {
       if (capturedImage) {
-        const result = await processRecording(capturedImage, transcript || "用户未提供语音描述");
+        const result = await processRecording(capturedImage, transcript || t('record.noSpeech'));
         setSuggestedName(result.name);
         setSuggestedLocation(result.location);
         setPhase('confirm');
@@ -113,9 +115,9 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
       console.error("AI Analysis error:", error);
       const isRateLimit = error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED');
 
-      setSuggestedName("未知物品");
-      setSuggestedLocation("识别失败，请尝试手动输入");
-      setErrorHint(isRateLimit ? "AI 线路忙 (429)，请稍后重试" : "分析失败，可能是网络问题");
+      setSuggestedName(t('record.unknownItem'));
+      setSuggestedLocation(t('record.errorRetry'));
+      setErrorHint(isRateLimit ? t('record.errorRateLimit') : t('record.errorNetwork'));
       setPhase('confirm');
     }
   };
@@ -137,7 +139,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
 
         <div className="absolute top-28 left-0 right-0 flex justify-center px-8 text-center">
           <div className="bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10">
-            <p className="text-white text-sm font-medium tracking-wide">拍下物品及环境</p>
+            <p className="text-white text-sm font-medium tracking-wide">{t('record.tip')}</p>
           </div>
         </div>
 
@@ -169,9 +171,9 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
                 <span className="material-symbols-outlined text-2xl text-white fill">mic</span>
               </div>
             </div>
-            <h2 className="text-white text-2xl font-bold mb-2">描述一下位置</h2>
+            <h2 className="text-white text-2xl font-bold mb-2">{t('record.describe')}</h2>
             <p className="text-white/80 text-sm leading-relaxed italic px-4">
-              {transcript ? `“${transcript}”` : "“我把它放在写字台右边的抽屉里了”"}
+              {transcript ? `“${transcript}”` : `“${t('record.placeholder')}”`}
             </p>
           </div>
         </div>
@@ -182,7 +184,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
             className="w-full bg-white text-black h-14 rounded-[2.5rem] font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl"
           >
             <span className="material-symbols-outlined font-bold text-xl">check_circle</span>
-            完成录音
+            {t('record.complete')}
           </button>
           <div className="grid grid-cols-2 gap-2.5">
             <button
@@ -190,14 +192,14 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
               className="w-full h-14 rounded-[2.5rem] text-white/80 font-bold bg-white/10 border border-white/5 active:bg-white/20 transition-colors flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-xl">refresh</span>
-              重新录音
+              {t('record.retry')}
             </button>
             <button
               onClick={() => setPhase('camera')}
               className="w-full h-14 rounded-[2.5rem] text-white/40 font-bold bg-white/5 border border-white/10 active:bg-white/10 transition-colors flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-xl">photo_camera</span>
-              重新拍照
+              {t('record.retake')}
             </button>
           </div>
         </div>
@@ -216,9 +218,9 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
           </div>
         </div>
         <div className="flex flex-col items-center">
-          <h2 className="text-white text-3xl font-bold mb-4 tracking-tight">AI 正在深度分析...</h2>
+          <h2 className="text-white text-3xl font-bold mb-4 tracking-tight">{t('record.processing')}</h2>
           <p className="text-white/40 text-center leading-relaxed italic max-w-xs font-medium">
-            正在为您精确提取物品名称及位置
+            {t('record.processingDesc')}
           </p>
         </div>
         <style>{`@keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(200%); } }`}</style>
@@ -236,7 +238,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
         <div className="absolute bottom-3 left-8">
           <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-xl text-primary px-3 py-1.5 rounded-full border border-primary-indigo/30 shadow-lg">
             <span className="material-symbols-outlined text-xs font-bold animate-pulse">auto_awesome</span>
-            <span className="text-[9px] font-bold uppercase tracking-widest">AI 联想提取</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest">{t('record.aiExtract')}</span>
           </div>
         </div>
       </div>
@@ -245,7 +247,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
         <section className="shrink-0">
           <label className="flex items-center gap-2 text-white/30 text-[9px] font-bold mb-1.5 uppercase tracking-[0.15em]">
             <span className="material-symbols-outlined text-primary text-sm fill">inventory_2</span>
-            提取到的物品
+            {t('record.itemLabel')}
           </label>
           <input
             className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-4 text-base font-bold text-white focus:ring-1 focus:ring-primary outline-none transition-all"
@@ -257,7 +259,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
         <section className="flex-1 flex flex-col min-h-0">
           <label className="flex items-center gap-2 text-white/30 text-[9px] font-bold mb-1.5 uppercase tracking-[0.15em]">
             <span className="material-symbols-outlined text-primary text-sm fill">location_on</span>
-            解析出的位置
+            {t('record.locationLabel')}
           </label>
           <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-4 min-h-0">
             <textarea
@@ -274,7 +276,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
             {errorHint ? 'error_outline' : 'info'}
           </span>
           <p className={`text-[10px] leading-relaxed italic font-medium ${errorHint ? 'text-red-400' : 'text-white/40'}`}>
-            {errorHint || `AI 已根据您的描述“${transcript || "..."}”智能校正。`}
+            {errorHint || t('record.aiSuccessTip', { transcript: transcript || "..." })}
           </p>
         </div>
       </div>
@@ -293,12 +295,12 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
           {isSaving ? (
             <>
               <span className="material-symbols-outlined text-xl animate-spin">sync</span>
-              <span>保存中...</span>
+              <span>{t('common.saving')}</span>
             </>
           ) : (
             <>
               <span className="material-symbols-outlined text-xl fill">save</span>
-              <span>确认并保存</span>
+              <span>{t('record.confirmSave')}</span>
             </>
           )}
         </button>
@@ -315,7 +317,7 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
           className={`w-full h-14 rounded-[2.5rem] flex items-center justify-center gap-2 text-white/40 font-bold text-xs bg-white/5 border border-white/10 transition-colors ${isSaving ? 'opacity-30 cursor-not-allowed' : 'active:bg-white/10'}`}
         >
           <span className="material-symbols-outlined text-lg">keyboard_voice</span>
-          <span>描述不对？重新说一下</span>
+          <span>{t('record.wrongDescribe')}</span>
         </button>
       </div>
 
@@ -328,8 +330,8 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
               <span className="material-symbols-outlined text-3xl text-white animate-spin">sync</span>
             </div>
           </div>
-          <h2 className="text-white text-2xl font-bold mb-2">正在保存...</h2>
-          <p className="text-white/50 text-sm">请稍候，数据正在上传</p>
+          <h2 className="text-white text-2xl font-bold mb-2">{t('common.saving')}</h2>
+          <p className="text-white/50 text-sm">{t('record.uploading')}</p>
         </div>
       )}
       <style>{`
@@ -341,3 +343,4 @@ const RecordView: React.FC<RecordViewProps> = ({ navigate, onCapture }) => {
 };
 
 export default RecordView;
+
