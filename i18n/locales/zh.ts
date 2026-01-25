@@ -36,6 +36,9 @@ const zh = {
         invalidCredentials: '邮箱或密码错误',
         emailNotConfirmed: '请先验证邮箱后再登录',
         emailExists: '该邮箱已注册，请直接登录',
+        loginWithGoogle: '使用 Google 登录',
+        loginWithApple: '使用 Apple ID 登录',
+        or: '或',
     },
     upgrade: {
         title: '保存你的数据',

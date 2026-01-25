@@ -36,6 +36,9 @@ const en = {
         invalidCredentials: 'Incorrect email or password',
         emailNotConfirmed: 'Please verify your email before logging in',
         emailExists: 'This email is already registered, please log in',
+        loginWithGoogle: 'Continue with Google',
+        loginWithApple: 'Continue with Apple ID',
+        or: 'OR',
     },
     upgrade: {
         title: 'Save Your Data',

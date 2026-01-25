@@ -99,6 +99,44 @@ export const signOut = async () => {
 };
 
 /**
+ * Google 登录
+ */
+export const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin
+        }
+    });
+
+    if (error) {
+        console.error('Google 登录失败:', error);
+        throw error;
+    }
+
+    return data;
+};
+
+/**
+ * Apple 登录
+ */
+export const signInWithApple = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+            redirectTo: window.location.origin
+        }
+    });
+
+    if (error) {
+        console.error('Apple 登录失败:', error);
+        throw error;
+    }
+
+    return data;
+};
+
+/**
  * 获取当前登录用户
  */
 export const getCurrentUser = async (): Promise<User | null> => {
