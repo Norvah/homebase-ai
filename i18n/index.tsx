@@ -30,20 +30,14 @@ const LOCALE_STORAGE_KEY = 'homebase_locale';
 
 // 获取默认语言
 const getDefaultLocale = (): Locale => {
-    // 1. 从本地存储读取
+    // 从本地存储读取（用户手动选择的语言优先）
     const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (saved === 'zh' || saved === 'en') {
         return saved;
     }
 
-    // 2. 根据浏览器语言判断
-    const browserLang = navigator.language.toLowerCase();
-    if (browserLang.startsWith('zh')) {
-        return 'zh';
-    }
-
-    // 3. 默认中文
-    return 'zh';
+    // 默认英文
+    return 'en';
 };
 
 // Context 类型
@@ -107,11 +101,11 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
     };
 
     return (
-        <I18nContext.Provider value= {{ locale, setLocale, t }
-}>
-    { children }
-    </I18nContext.Provider>
-  );
+        <I18nContext.Provider value={{ locale, setLocale, t }
+        }>
+            {children}
+        </I18nContext.Provider>
+    );
 };
 
 // 自定义 Hook
