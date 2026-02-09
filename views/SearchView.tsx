@@ -180,7 +180,7 @@ const SearchView: React.FC<SearchViewProps> = ({ items, navigate }) => {
             </div>
           </div>
 
-          <h1 className="text-white text-4xl font-bold text-center mb-6 h-20 overflow-hidden leading-tight">
+          <h1 className="text-white text-4xl font-bold text-center mb-6 h-24 overflow-hidden leading-tight">
             {transcript || t('search.placeholder')}
           </h1>
           <p className="text-white/30 text-sm text-center font-medium">{t('search.tip')}</p>
