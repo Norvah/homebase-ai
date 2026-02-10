@@ -9,9 +9,10 @@ interface HomeViewProps {
   itemCount: number;
   onSignOut?: () => void;
   onShowAuth?: () => void;
+  userAvatarUrl?: string | null;
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount, onSignOut, onShowAuth }) => {
+const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount, onSignOut, onShowAuth, userAvatarUrl }) => {
   const { t } = useI18n();
 
   return (
@@ -38,10 +39,19 @@ const HomeView: React.FC<HomeViewProps> = ({ navigate, itemCount, onSignOut, onS
           ) : onSignOut ? (
             <button
               onClick={onSignOut}
-              className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 active:scale-95 transition-transform"
+              className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 active:scale-95 transition-transform overflow-hidden"
               title={t('settings.logout')}
             >
-              <span className="material-symbols-outlined text-xl text-white">logout</span>
+              {userAvatarUrl ? (
+                <img
+                  src={userAvatarUrl}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-xl text-white">logout</span>
+              )}
             </button>
           ) : null}
         </div>

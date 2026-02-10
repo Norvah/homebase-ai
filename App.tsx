@@ -229,6 +229,9 @@ const App: React.FC = () => {
   // 判断是否显示登出按钮（仅正式用户显示）
   const isRegisteredUser = user && !authService.isAnonymousUser(user);
 
+  // NOTE: 从 Supabase OAuth 登录的用户元数据中提取头像 URL
+  const userAvatarUrl = user?.user_metadata?.avatar_url || null;
+
   const renderView = () => {
     // 正在检查认证状态
     if (isAuthChecking) {
@@ -264,6 +267,7 @@ const App: React.FC = () => {
             itemCount={state.items.length}
             onSignOut={isRegisteredUser ? handleSignOut : undefined}
             onShowAuth={authService.isAnonymousUser(user) ? handleShowAuth : undefined}
+            userAvatarUrl={userAvatarUrl}
           />
         );
       case 'list':
@@ -299,6 +303,7 @@ const App: React.FC = () => {
             itemCount={state.items.length}
             onSignOut={isRegisteredUser ? handleSignOut : undefined}
             onShowAuth={authService.isAnonymousUser(user) ? handleShowAuth : undefined}
+            userAvatarUrl={userAvatarUrl}
           />
         );
     }
